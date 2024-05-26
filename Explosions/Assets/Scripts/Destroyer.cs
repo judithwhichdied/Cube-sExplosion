@@ -3,12 +3,12 @@ using UnityEngine;
 
 public class Destroyer : MonoBehaviour
 {
-    public event Action IsDestroyed;
+    public event Action Destroyed;
 
     private void OnMouseUpAsButton()
     {
         Destroy(gameObject);
 
-        IsDestroyed?.Invoke();
+        Destroyed?.Invoke();
     }
 }
