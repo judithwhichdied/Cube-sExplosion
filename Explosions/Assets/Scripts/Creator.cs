@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Destroyer))]
+[RequireComponent (typeof(Renderer))]
 public class Creator : MonoBehaviour
 {
     [SerializeField] private List<Material> _materials;
@@ -39,15 +40,15 @@ public class Creator : MonoBehaviour
 
         int randomMaxValue = 7;
 
-        int randomValue;
+        int cubesCount;
 
         if (Utils.GetRandomNumber(_minChanceValue, _maxChanceValue) == _minChanceValue)
         {
             Debug.Log(2);
 
-            randomValue = Utils.GetRandomNumber(randomMinValue, randomMaxValue);
+            cubesCount = Utils.GetRandomNumber(randomMinValue, randomMaxValue);
 
-            for (int i = 0; i < randomValue; i++)
+            for (int i = 0; i < cubesCount; i++)
             {
                 Create();
             }
