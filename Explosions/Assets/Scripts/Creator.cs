@@ -1,20 +1,15 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
-[RequireComponent(typeof(Destroyer))]
-[RequireComponent (typeof(Renderer))]
+[RequireComponent (typeof(Destroyer))]
 public class Creator : MonoBehaviour
 {
-    [SerializeField] private List<Material> _materials;
-    [SerializeField] private GameObject _prefab;
+    [SerializeField] private Cube _cube;
 
     private Destroyer _destroyer;
-
-    private int _minChanceValue = 0;
-    private int _maxChanceValue = 1;
-
-    public event Action NotCreated;
+  
+    public event Action<Cube> NotCreated;
 
     private void Awake()
     {
@@ -24,66 +19,41 @@ public class Creator : MonoBehaviour
     private void OnEnable()
     {
         _destroyer.Destroyed += Spawn;
-        _destroyer.Destroyed += DecreaseSpawnChance;
     }
 
-    private void DecreaseSpawnChance()
+    private void OnDisable()
     {
-        int decreasingValue = 2;
-
-        _maxChanceValue *= decreasingValue;
+        _destroyer.Destroyed -= Spawn;
     }
 
-    private void Spawn()
-    {
+    private void Spawn(Cube cube)
+    {       
         int randomMinValue = 2;
 
         int randomMaxValue = 7;
 
         int cubesCount;
 
-        if (Utils.GetRandomNumber(_minChanceValue, _maxChanceValue) == _minChanceValue)
+        if (Random.Range(cube.MinCreateChance, cube.MaxCreateChance) == cube.MinCreateChance)
         {
-            Debug.Log(2);
-
-            cubesCount = Utils.GetRandomNumber(randomMinValue, randomMaxValue);
+            cubesCount = Random.Range(randomMinValue, randomMaxValue);
 
             for (int i = 0; i < cubesCount; i++)
             {
-                Create();
+               Create(cube);
             }
         }
         else
         {
-            Debug.Log(1);
-            NotCreated?.Invoke();
+            NotCreated?.Invoke(cube);
         }
     }
 
-    private void Create()
+    private void Create(Cube cube)
     {
         int decreasingValue = 2;
 
-        int randomMinValue = 0;
-        int randomMaxValue = 9;
-
-        GameObject cube;
-
-        cube = Instantiate(_prefab);
-
-        cube.transform.position = transform.position;
-        cube.transform.localScale = transform.localScale / decreasingValue;
-
-        cube.GetComponent<Renderer>().material = _materials[Utils.GetRandomNumber(randomMinValue, randomMaxValue)];
-    }
-}
-
-public class Utils
-{
-    private static System.Random s_random = new System.Random();
-
-    public static int GetRandomNumber(int min, int max)
-    {
-        return s_random.Next(min, max);
+       Cube newCube = Instantiate(cube, cube.transform.position, Quaternion.identity);
+       newCube.Initialize(cube.transform.position, cube.transform.localScale, cube.MaxCreateChance * decreasingValue);
     }
 }

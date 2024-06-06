@@ -4,8 +4,8 @@ using UnityEngine;
 [RequireComponent (typeof(Creator))]
 public class Exploder : MonoBehaviour
 {
-    [SerializeField] private float _explosionRadius;
-    [SerializeField] private float _explosionForce;
+    [SerializeField] private float _maxExplosionRadius;
+    [SerializeField] private float _maxExplosionForce;
 
     private Creator _creator;
 
@@ -21,32 +21,41 @@ public class Exploder : MonoBehaviour
         _creator.NotCreated += Explode;
     }
 
-    private void OnDisable()
+    private void Explode(Cube cube)
     {
-        _creator.NotCreated -= Explode;
-    }
+        List<Rigidbody> cubes = GetExplodableObjects(cube);
 
-    private void Explode()
-    {
-        foreach (Rigidbody explodableObject in GetExplodableObjects())
+        float explosionForce = _maxExplosionForce;
+
+        foreach (Rigidbody explodableObject in cubes)
         {
-            _explosionForce *= (_proportionValue / transform.localScale.x);
-            _explosionForce *= (_proportionValue / _explosionRadius);
+            var heading = explodableObject.transform.position - cube.transform.position;
 
-            explodableObject.AddExplosionForce(_explosionForce, transform.position, _explosionRadius);
+            var distance = heading.magnitude;
+
+            explosionForce *= _proportionValue / cube.transform.localScale.x;
+
+            explosionForce *= _proportionValue / distance;
+
+            explodableObject.AddExplosionForce(explosionForce, cube.transform.position, _maxExplosionRadius);
         }
     }
 
-    private List<Rigidbody> GetExplodableObjects()
+    private List<Rigidbody> GetExplodableObjects(Cube cube)
     {
-        _explosionRadius *= (_proportionValue / transform.localScale.x);
+        float explosionRadius = _maxExplosionRadius;
 
-        Collider[] hits = Physics.OverlapSphere(transform.position, _explosionRadius);
+        explosionRadius *= (_proportionValue / cube.transform.localScale.x);
+
+        Collider[] hits = Physics.OverlapSphere(cube.transform.position, explosionRadius);
 
         List<Rigidbody> cubes = new List<Rigidbody>();
 
         foreach (Collider hit in hits)
         {
+            if (hit.gameObject == cube.gameObject)
+                continue;
+
             if(hit.attachedRigidbody != null)
             {
                 cubes.Add(hit.attachedRigidbody);
